@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AutoProg — chord progressions for songwriters</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app">
+    <aside class="side">
+      <div class="brand">
+        <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect x="2" y="13" width="5" height="12" rx="2"/><rect x="10" y="7" width="5" height="18" rx="2"/><rect x="18" y="10" width="5" height="15" rx="2"/><rect x="26" y="4" width="4" height="21" rx="2"/></svg>
+        <div><h1>AutoProg</h1><p>Chord progressions for new songs</p></div>
+      </div>
+
+      <label class="field"><span>Genre</span><select id="genre"></select></label>
+      <label class="field"><span>Subgenre</span><select id="sub"></select></label>
+      <p class="hint" id="genreHint"></p>
+
+      <div class="row">
+        <label class="field"><span>Key</span><select id="keyRoot"></select></label>
+        <label class="field grow"><span>Scale / mode</span><select id="mode"></select></label>
+      </div>
+
+      <div class="row">
+        <label class="field"><span>Section</span>
+          <select id="section">
+            <option value="verse">Verse</option><option value="prechorus">Pre-chorus</option>
+            <option value="chorus">Chorus</option><option value="bridge">Bridge</option><option value="outro">Outro</option>
+          </select>
+        </label>
+        <label class="field"><span>Length</span>
+          <select id="bars"><option value="4">4 bars</option><option value="8">8 bars</option><option value="12">12 bars</option><option value="16">16 bars</option></select>
+        </label>
+      </div>
+
+      <div class="row">
+        <label class="field"><span>Mood</span>
+          <select id="mood">
+            <option value="neutral">Neutral</option><option value="uplifting">Uplifting</option><option value="dark">Dark</option>
+            <option value="dreamy">Dreamy</option><option value="nostalgic">Nostalgic</option><option value="tense">Tense</option>
+          </select>
+        </label>
+        <label class="field"><span>Chords</span>
+          <select id="complexity">
+            <option value="typical">Genre-typical</option><option value="triads">Simple triads</option>
+            <option value="sevenths">7th chords</option><option value="extended">Extended (9ths, 13ths)</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="field"><span>Tempo <b id="tempoOut"></b></span><input type="range" id="tempo" min="40" max="220" step="1"></label>
+
+      <div class="row">
+        <label class="field grow"><span>Playback feel</span>
+          <select id="feel">
+            <option value="strum">Quarter-note strum</option><option value="eighth">Driving eighths</option>
+            <option value="pad">Sustained pad</option><option value="arp">Arpeggio</option><option value="offbeat">Offbeat skank</option>
+          </select>
+        </label>
+        <label class="check"><input type="checkbox" id="swing"><span>Swing</span></label>
+      </div>
+
+      <button class="btn primary big" id="generate">Generate progression</button>
+      <p class="hint">Changing the genre, mode, section, length, mood or chord type writes a new progression. Locked chords are kept; changing the key transposes everything.</p>
+    </aside>
+
+    <main>
+      <section class="transport">
+        <button class="btn primary" id="play" aria-pressed="false"><span id="playIcon">▶</span> <span id="playText">Play</span></button>
+        <label class="check"><input type="checkbox" id="loop"><span>Loop</span></label>
+        <label class="check"><input type="checkbox" id="playChords"><span>Chords</span></label>
+        <label class="check"><input type="checkbox" id="playMelody"><span>Melody</span></label>
+        <label class="vol"><span>Volume</span><input type="range" id="vol" min="0" max="1" step="0.01"></label>
+        <span class="spacer"></span>
+        <button class="btn" id="undo" title="Undo (Ctrl+Z)">Undo</button>
+        <button class="btn" id="copy">Copy chart</button>
+        <button class="btn" id="midi">Export MIDI</button>
+      </section>
+
+      <section class="card">
+        <header class="card-head">
+          <div><h2 id="songTitle"></h2><p id="songMeta"></p></div>
+          <button class="btn" id="regen">Regenerate</button>
+        </header>
+        <div class="chart" id="chart"></div>
+        <p class="hint">Click a chord to edit it, drag to reorder, and use the lock to keep it when regenerating.</p>
+      </section>
+
+      <section class="card" id="editor"></section>
+
+      <section class="card">
+        <header class="card-head">
+          <div><h2>Melody &amp; solo ideas</h2><p id="melMeta"></p></div>
+          <button class="btn" id="newMelody">New idea</button>
+        </header>
+        <div class="row wrap mel-controls">
+          <label class="field"><span>Style</span><select id="melStyle"><option value="melody">Melody (singable)</option><option value="solo">Solo (busier)</option></select></label>
+          <label class="field"><span>Scale</span><select id="melScale"></select></label>
+          <label class="field"><span>Density</span><select id="melDensity"><option value="1">Sparse</option><option value="2">Medium</option><option value="3">Busy</option></select></label>
+        </div>
+        <div class="advice" id="advice"></div>
+        <div class="roll-wrap"><canvas id="roll" height="240"></canvas></div>
+        <p class="hint">Shaded lanes mark the notes of the chord underneath — the strongest places to land. The line re-fits itself when you change a chord.</p>
+        <details class="notes"><summary>Notes bar by bar</summary><div id="melText"></div></details>
+      </section>
+    </main>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/theory.js"></script>
+  <script src="js/genres.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/melody.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/midi.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
